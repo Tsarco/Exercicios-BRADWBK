@@ -1,0 +1,69 @@
+# ::::::::::::::: Tipos da API :::::::::::::::::::::
+
+enum Episode{
+    NEWHOPE
+    EMPIRE
+    JEDI
+}
+
+interface Character{
+    id: ID! # tipo que representa um ID não nulo
+    name: String! # aceita string não null
+    appearsIn: [Episode]! # aceita uma lista de Episodes não nulos
+    friends: [Character] # aceita lista de Characters. Podem ser nulos
+}
+
+type Droid implements Character{
+    id: ID!
+    name: String!
+    appearsIn: [Episode]!
+    friends: [Character]
+    primaryFunction: String
+}
+
+type Human implements Character {
+  id: ID!
+  name: String!
+  appearsIn: [Episode]!
+  friends: [Character]
+  height: Float
+}
+
+type Starship {
+  id: ID!
+  name: String!
+  length: Float
+}
+
+type Review {
+  stars: Int!
+  commentary: String
+}
+
+# ::::::::::::::: Tipo para Inputs :::::::::::::::::::::
+
+input ReviewInput{
+    stars: Int!
+    commentary: String
+}
+
+# ::::::::::::::: Querys :::::::::::::::::::::
+
+type Query {
+  hero(episode: Episode): Character #Será o mesmo nome no método Java
+  droid(id: ID!): Droid # Será o mesmo nome no método Java
+  search(text: String!): [SearchResult!]! # Será o mesmo nome no método Java
+  humans: [Human!]!
+  starships: [Starship!]!
+  character(id: ID!): Character
+}
+
+# ::::::::::::::: Mutations :::::::::::::::::::::
+
+type Mutation {
+    createReview(episode: Episode!, review: ReviewInput!): Review # Será o mesmo nome no método Java
+}
+
+# ::::::::::::::: Union (Consulta combinada) :::::::::::::::::::::
+
+union SearchResult = Human | Droid | Starship
