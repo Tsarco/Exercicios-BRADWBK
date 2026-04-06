@@ -1,5 +1,6 @@
 package br.edu.ifsp.graphql.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -18,10 +19,16 @@ import br.edu.ifsp.graphql.model.Starship;
 @Controller
 public class StarWarController {
 
+    // Meu 'banco de dados' provisorio pra query de add character funcionar
+    private List<Character> tabelaCharacters = new ArrayList<>(List.of(
+        new Human("1001", "Luke Skywalker", new ArrayList<>(), new ArrayList<>(), 1.72),
+        new Droid("2001", "R2-D2", new ArrayList<>(), new ArrayList<>(), "Astromech"),
+        new Human("1002", "Darth Vader", new ArrayList<>(), new ArrayList<>(), 2.02)
+    ));
+
     /*
      * Mapeado no resources/graphql/scheme.graphqls
-     * 
-     * type Query {
+     * * type Query {
      * hero(episode: Episode): Character
      * }
      */
@@ -37,8 +44,7 @@ public class StarWarController {
 
     /*
      * Mapeado no resources/graphql/scheme.graphqls
-     * 
-     * type Query {
+     * * type Query {
      * droid(id: ID!): Droid
      * }
      */
@@ -54,8 +60,7 @@ public class StarWarController {
 
     /*
      * Mapeado no resources/graphql/scheme.graphqls
-     * 
-     * type Query {
+     * * type Query {
      * search(text: String!): [SearchResult!]!
      * }
      */
@@ -69,11 +74,11 @@ public class StarWarController {
 
     @QueryMapping
     public List<Human> humans() {
-
-        return List.of(
-            new Human("1001", "Luke Skywalker", List.of(Episode.NEWHOPE), List.of(), 1.72),
-            new Human("1002", "Darth Vader", List.of(Episode.NEWHOPE, Episode.EMPIRE), List.of(), 2.02)
-        );
+        List<Human> lista = new ArrayList<>();
+        for (Character c : tabelaCharacters) {
+            if (c instanceof Human) lista.add((Human) c);
+        }
+        return lista;
     }
 
     @QueryMapping
@@ -84,14 +89,9 @@ public class StarWarController {
         );
     }
 
-    private List<Character> allCharacters = List.of(
-        new Human("1001", "Luke", List.of(Episode.NEWHOPE), List.of(), 1.72),
-        new Droid("2001", "R2-D2", List.of(Episode.EMPIRE), List.of(), "Astromech")
-    );
-
     @QueryMapping
     public Character character(@Argument String id) {
-        return allCharacters.stream()
+        return tabelaCharacters.stream()
             .filter(c -> c.getId().equals(id))
             .findFirst()
             .orElse(null);
@@ -99,13 +99,52 @@ public class StarWarController {
 
     /*
      * Mapeado no resources/graphql/scheme.graphqls
-     * 
-     * type Mutation {
+     * * type Mutation {
      * createReview(episode: Episode!, review: ReviewInput!): Review
      * }
      */
+
+    // =========================
+    //         MUTAÇÕES
+    // =========================
     @MutationMapping
     public Review createReview(@Argument Episode episode, @Argument ReviewInput review) {
         return new Review(review.getStars(), review.getCommentary());
     }
+
+    @MutationMapping
+    public Human createHuman(@Argument String id, @Argument String name, @Argument Double height) {
+        Human novo = new Human(id, name, new ArrayList<>(), new ArrayList<>(), height);
+        tabelaCharacters.add(novo);
+        return novo;
+    }
+
+    @MutationMapping
+    public Droid createDroid(@Argument String id, @Argument String name, @Argument String primaryFunction) {
+        Droid novo = new Droid(id, name, new ArrayList<>(), new ArrayList<>(), primaryFunction);
+        tabelaCharacters.add(novo);
+        return novo;
+    }
+
+    @MutationMapping
+    public Starship createStarship(@Argument String id, @Argument String name, @Argument Double length) {
+        return new Starship(Integer.parseInt(id), name, length);
+    }
+
+    @MutationMapping
+    public Character addFriend(@Argument String characterId, @Argument String friendId) {
+        Character principal = null;
+        Character amigo = null;
+
+        for (Character character : tabelaCharacters) {
+            if (character.getId().equals(characterId)) principal = character;
+            if (character.getId().equals(friendId)) amigo = character;
+        }
+
+        if (principal != null && amigo != null) {
+            principal.getFriends().add(amigo);
+        }
+        return principal;
+    }
+
 }

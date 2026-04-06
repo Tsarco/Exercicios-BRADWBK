@@ -62,6 +62,10 @@ type Query {
 
 type Mutation {
     createReview(episode: Episode!, review: ReviewInput!): Review # Será o mesmo nome no método Java
+    createHuman(id: ID!, name: String!, height: Float): Human
+    createDroid(id: ID!, name: String!, primaryFunction: String): Droid
+    createStarship(id: ID!, name: String!, length: Float): Starship
+    addFriend(characterId: ID!, friendId: ID!): Character
 }
 
 # ::::::::::::::: Union (Consulta combinada) :::::::::::::::::::::
